@@ -17,7 +17,7 @@ Kent Beck의 Test-Driven Development와 Tidy First 원칙을 따르는 Claude Co
 
 ### 사전 준비
 
-1. Kent Beck의 Agument Coding Rules를 적용합니다. (`LAUDE.md` 참고)
+1. Kent Beck의 Agument Coding Rules를 적용합니다. (`CLAUDE.md` 참고)
 2. 프로젝트 루트의 `.claude/commands` 경로에 `commands/*.md`를 복사합니다.
 ```bash
 cp commands/*.md .claude/commands/
