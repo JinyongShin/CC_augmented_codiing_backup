@@ -738,9 +738,11 @@ def add(a, b, operation='add'):
 
 ---
 
-# UV Package Management
+# Additional Backups
 
-- 클로드코드가 uv 를 활용하도록 하기 위해서는 `uv_package_management.md`의 내용을 `CLAUDE.md` 파일 끝부분에 복사하여 붙여넣으세요.
+- Claude Code가 uv 를 활용하도록 하기 위해서는 `uv_package_management.md`의 내용을 `CLAUDE.md` 파일 끝부분에 복사하여 붙여넣으세요.
+- Git worktree를 이용해 병렬로 작업 굴리고싶으면 `GIT_WORKTREE_PARALLEL_WORKFLOW.md` 를 context로 넣으면서 환경 설정 해달라고 하세요.
+    - 환경 설정 다 되면 병렬 작업 수 만큼 터미널 열어서 작업시키면 됩니다. (더 좋은 방법 있으면 공유좀..)
 
 ---
 **Happy TDD! 🧪**
