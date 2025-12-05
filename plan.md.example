@@ -1,0 +1,33 @@
+# Test Plan
+
+## Instructions
+
+This file tracks your TDD test plan following Kent Beck's principles.
+
+- `[ ]` = Test not started
+- `[x]` = Test completed
+- Use `/go` to automatically execute the next unmarked test (Red → Green → Refactor cycle)
+- Use `/next` to view the next test without executing
+- Use `/mark` to mark the current test as done
+- Use `/plan-add` to add new tests to this plan
+
+## TDD Workflow
+
+1. Write a failing test (Red)
+2. Implement minimum code to pass (Green)
+3. Refactor while keeping tests green
+4. Commit and repeat
+
+## Tests
+
+### Example Tests (Delete these and add your own)
+
+- [ ] Test 1: Example - Should validate input parameters
+- [ ] Test 2: Example - Should handle empty list gracefully
+- [ ] Test 3: Example - Should raise exception for invalid data
+
+---
+
+## Notes
+
+Add any notes about your testing strategy here.
