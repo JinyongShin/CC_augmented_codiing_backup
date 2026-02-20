@@ -1,6 +1,16 @@
-# TDD Slash Commands Guide
+# Augmented Coding Rules for Claude Code
 
-Kent Beck의 Test-Driven Development와 Tidy First 원칙을 따르는 Claude Code slash 명령어 가이드입니다.
+Kent Beck의 Test-Driven Development와 Tidy First 원칙을 Claude Code에 적용하는 구성 모음입니다.
+
+## 구성 요소
+
+| 디렉토리 | 설치 경로 | 역할 |
+|----------|-----------|------|
+| `rules/` | `.claude/rules/` | TDD + uv 정책 자동 적용 (필수) |
+| `tdd_commands/` | `.claude/commands/` | 단계별 수동 제어 커맨드 (필수) |
+| `worktree-parallel/` | `.claude/skills/worktree-parallel/` | 병렬 개발 skill (선택) |
+
+---
 
 ## 목차
 
@@ -10,19 +20,34 @@ Kent Beck의 Test-Driven Development와 Tidy First 원칙을 따르는 Claude Co
 4. [실전 예제](#실전-예제)
 5. [베스트 프랙티스](#베스트-프랙티스)
 6. [트러블슈팅](#트러블슈팅)
+7. [치트 시트](#치트-시트)
 
 ---
 
 ## 시작하기
 
-### 사전 준비
+### 설치
 
-1. Kent Beck의 Agument Coding Rules를 적용합니다. (`CLAUDE.md` 참고)
-2. 프로젝트 루트의 `.claude/commands` 경로에 `commands/*.md`를 복사합니다.
 ```bash
-cp commands/*.md .claude/commands/
+# 1. TDD + uv 정책 적용 (필수)
+#    rules/TDD.md → Claude Code가 자동으로 TDD 방식으로 개발
+#    rules/uv.md  → Python 프로젝트에서 자동으로 uv 패키지 매니저 사용
+mkdir -p .claude/rules
+cp rules/* .claude/rules/
+
+# 2. 단계별 제어 커맨드 설치 (필수)
+mkdir -p .claude/commands
+cp -r tdd_commands/*.md .claude/commands/
+
+# 3. 병렬 개발 skill 설치 (선택)
+#    여러 독립적인 작업을 동시에 개발할 때 사용
+mkdir -p .claude/skills
+cp -r worktree-parallel/ .claude/skills/worktree-parallel/
 ```
-3. **plan.md 작성**: 프로젝트 루트에 이미 생성된 `plan.md.example` 파일을 참고하여 계획을 작성합니다.
+
+### plan.md 작성
+
+프로젝트 루트에 `plan.md`를 작성합니다. `plan.md.example`을 참고하세요.
 
 ```markdown
 ## Tests
@@ -32,25 +57,20 @@ cp commands/*.md .claude/commands/
 - [ ] Test 3: User password should be hashed before storage
 ```
 
-2. **테스트 환경 확인**: pytest가 설치되어 있는지 확인합니다.
-
-```bash
-pytest --version
-```
-
 ### 첫 번째 TDD 사이클
 
-가장 간단한 사용법:
+rules 설치 후 Claude Code는 자동으로 TDD 방식으로 개발합니다.
+커맨드는 그 위에서 단계별 진행을 직접 제어하고 싶을 때 사용합니다.
 
 ```bash
-/go
+/go   # 다음 테스트의 전체 TDD 사이클(Red → Green → Refactor) 자동 실행
 ```
-
-이 명령어 하나로 다음 테스트의 전체 TDD 사이클(Red → Green → Refactor)이 자동으로 진행됩니다.
 
 ---
 
 ## 핵심 워크플로우
+
+> **rules가 TDD를 기본 적용합니다.** 커맨드는 단계별 진행을 직접 제어하고 싶을 때 사용합니다.
 
 ### 기본 TDD 사이클
 
@@ -91,480 +111,34 @@ pytest --version
 
 ## 명령어 레퍼런스
 
-### 🎯 핵심 TDD 명령어
-
-#### `/go`
-**용도**: 다음 테스트 자동 실행
-**설명**: plan.md에서 첫 번째 unmarked 테스트를 찾아 Red → Green → Refactor 전체 사이클을 자동으로 진행합니다.
-
-```bash
-/go
-```
-
-**언제 사용하나요?**
-- 빠르게 TDD 사이클을 진행하고 싶을 때
-- TDD 프로세스를 자동화하고 싶을 때
-
----
-
-#### `/next`
-**용도**: 다음 테스트 미리보기
-**설명**: 다음에 구현할 테스트를 보여주기만 하고 실행하지 않습니다.
-
-```bash
-/next
-```
-
-**출력 예시**:
-```
-📋 Next Test in Plan:
-
-[ ] User should be able to create account with valid email
-
-Position: Test 1 of 10
-Remaining: 10 tests
-
-To execute this test, use: /go
-```
-
-**언제 사용하나요?**
-- 다음 작업을 계획할 때
-- 전체 진행 상황을 파악하고 싶을 때
-
----
-
-#### `/mark`
-**용도**: 현재 테스트 완료 표시
-**설명**: plan.md에서 `- [ ]`를 `- [x]`로 변경합니다.
-
-```bash
-/mark
-```
-
-**주의사항**:
-- 모든 테스트가 통과해야 합니다
-- TDD 사이클(Red → Green → Refactor)이 완료되어야 합니다
-
----
-
-#### `/status`
-**용도**: TDD 상태 확인
-**설명**: 현재 진행 상황, TDD 단계, 테스트 상태를 종합적으로 보여줍니다.
-
-```bash
-/status
-```
-
-**출력 예시**:
-```
-📊 TDD Status Report
-
-Progress: 3/10 tests complete (30%)
-[███░░░░░░░]
-
-🔄 Current Phase: GREEN
-
-📋 Current Test:
-- [ ] User registration should reject invalid email
-
-✅ Test Status: 15 passing, 0 failed
-
-Next Action: Use /refactor or /mark
-```
-
----
-
-### 🔄 TDD 단계별 명령어
-
-#### `/red`
-**용도**: RED 단계 - 실패하는 테스트 작성
-**설명**: 구현 코드 없이 테스트만 작성하고 실패를 확인합니다.
-
-```bash
-/red
-```
-
-**원칙**:
-- 한 번에 하나의 테스트만 작성
-- 가장 단순한 실패하는 테스트 작성
-- 명확한 assertion 사용
-
-**예시**:
-```python
-def test_should_reject_invalid_email():
-    """유효하지 않은 이메일로 사용자 등록 시 예외 발생"""
-    # Given
-    invalid_email = "not-an-email"
-
-    # When & Then
-    with pytest.raises(ValidationError):
-        User.register(email=invalid_email)
-```
-
----
-
-#### `/green`
-**용도**: GREEN 단계 - 최소 코드로 테스트 통과
-**설명**: 테스트를 통과시키기 위한 최소한의 코드만 작성합니다.
-
-```bash
-/green
-```
-
-**원칙**:
-- **최소한의 코드**만 작성 (가장 중요!)
-- 추가 기능 구현 금지
-- 하드코딩도 허용 (나중에 일반화)
-
-**좋은 예**:
-```python
-def validate_email(email):
-    if "@" not in email:
-        raise ValidationError("Invalid email")
-    return True
-```
-
-**나쁜 예** (과도한 구현):
-```python
-def validate_email(email):
-    # 정규식, 도메인 검증, MX 레코드 확인 등...
-    # 테스트가 요구하지 않는 기능들
-```
-
----
-
-#### `/refactor`
-**용도**: REFACTOR 단계 - 코드 개선
-**설명**: 테스트를 통과 상태로 유지하면서 코드 구조를 개선합니다.
-
-```bash
-/refactor
-```
-
-**리팩토링 대상**:
-- 중복 코드 (DRY 원칙)
-- 불명확한 변수명
-- 긴 메서드
-- 복잡한 조건문
-- 매직 넘버
-
-**프로세스**:
-1. 한 번에 하나의 리팩토링만 수행
-2. 각 리팩토링 후 테스트 실행
-3. 테스트 실패 시 즉시 되돌리기
-
----
-
-#### `/test-run`
-**용도**: 테스트 실행
-**설명**: pytest를 `-v -s` 옵션으로 실행하여 상세한 결과를 확인합니다.
-
-```bash
-/test-run
-```
-
-**실행 명령어**: `pytest -v -s`
-
-**언제 사용하나요?**
-- 각 TDD 단계 사이에
-- 리팩토링 후 검증할 때
-- 현재 상태를 확인하고 싶을 때
-
----
-
-### 🧹 Tidy First 명령어
-
-#### `/tidy`
-**용도**: 구조적 변경 제안 및 적용
-**설명**: 행동 변경 없이 코드 구조만 개선합니다.
-
-```bash
-/tidy
-```
-
-**구조적 변경 예시**:
-- 변수/함수/클래스 이름 변경
-- 메서드 추출
-- 코드 이동
-- 포맷팅 개선
-
-**중요**: 모든 테스트가 통과한 상태에서만 실행하세요.
-
-**프로세스**:
-```
-1. 테스트 통과 확인
-2. 구조적 변경 적용
-3. 테스트 실행 (여전히 통과해야 함)
-4. /commit-structural로 커밋
-```
-
----
-
-### 📋 Plan 관리 명령어
-
-#### `/plan-view`
-**용도**: 전체 테스트 계획 보기
-**설명**: plan.md의 전체 내용과 진행 통계를 표시합니다.
-
-```bash
-/plan-view
-```
-
----
-
-#### `/plan-add`
-**용도**: 새 테스트 추가
-**설명**: plan.md에 새로운 테스트를 추가합니다.
-
-```bash
-/plan-add Should validate password strength
-```
-
-또는 인터랙티브하게:
-```bash
-/plan-add
-```
-그러면 테스트 설명을 물어봅니다.
-
----
-
-#### `/plan-reset`
-**용도**: 모든 테스트 마크 초기화
-**설명**: 모든 `[x]`를 `[ ]`로 변경합니다.
-
-```bash
-/plan-reset
-```
-
-**⚠️ 주의**: 파괴적 작업이므로 확인 절차가 있습니다.
-
-**사용 사례**:
-- 동일한 테스트를 다시 실습할 때
-- 새로운 반복 시작 시
-
----
-
-### 💾 커밋 명령어
-
-#### `/commit-structural`
-**용도**: 구조적 변경만 커밋
-**설명**: 행동 변경이 없는 순수 구조적 변경을 커밋합니다.
-
-```bash
-/commit-structural
-```
-
-**커밋 전 검증**:
-- ✅ 모든 테스트 통과
-- ✅ 린터 경고 없음
-- ✅ 행동 변경 없음
-- ✅ 구조적 변경만 있음
-
-**커밋 메시지 예시**:
-```
-structural: Extract email validation into separate function
-
-- Moved validation logic from User.register to validate_email()
-- Improves code reusability and testability
-
-All tests passing. No behavior changes.
-```
-
----
-
-#### `/commit-behavioral`
-**용도**: 행동 변경 커밋
-**설명**: 새 기능, 버그 수정 등 행동 변경을 커밋합니다.
-
-```bash
-/commit-behavioral
-```
-
-**커밋 전 검증**:
-- ✅ 모든 테스트 통과
-- ✅ TDD 사이클 완료
-- ✅ 린터 경고 없음
-- ✅ 구조적 변경이 먼저 커밋되었음
-
-**커밋 메시지 예시**:
-```
-feat: Add email validation to user registration
-
-- Implemented validate_email() function
-- Added tests for valid and invalid email formats
-- User.register() now validates email before saving
-
-TDD cycle complete. All tests passing.
-```
+전체 명령어 상세 설명은 **[docs/commands.md](docs/commands.md)** 를 참조하세요.
+
+| 명령어 | 용도 |
+|--------|------|
+| `/go` | 자동 TDD 사이클 |
+| `/red` | RED 단계 - 실패 테스트 작성 |
+| `/green` | GREEN 단계 - 최소 구현 |
+| `/refactor` | REFACTOR 단계 - 코드 개선 |
+| `/test-run` | 테스트 실행 |
+| `/mark` | 테스트 완료 표시 |
+| `/next` | 다음 테스트 미리보기 |
+| `/status` | 현재 TDD 상태 확인 |
+| `/tidy` | 구조적 개선 (Tidy First) |
+| `/commit-structural` | 구조적 변경 커밋 |
+| `/commit-behavioral` | 행동 변경 커밋 |
+| `/plan-view` | 전체 계획 보기 |
+| `/plan-add` | 새 테스트 추가 |
+| `/plan-reset` | 모든 마크 초기화 |
 
 ---
 
 ## 실전 예제
 
-### 예제 1: 간단한 기능 추가
+상세 예제는 **[docs/examples.md](docs/examples.md)** 를 참조하세요.
 
-**시나리오**: 이메일 검증 기능 추가
-
-#### Step 1: Plan 작성
-
-```markdown
-## Tests
-- [ ] Should accept valid email with @ symbol
-- [ ] Should reject email without @ symbol
-- [ ] Should reject empty email
-```
-
-#### Step 2: 첫 번째 테스트 실행
-
-```bash
-/go
-```
-
-Claude가 자동으로:
-1. RED: 첫 번째 테스트 작성 및 실패 확인
-2. GREEN: 최소 코드 구현
-3. REFACTOR: 개선 제안 (필요시)
-
-#### Step 3: 완료 표시
-
-```bash
-/mark
-```
-
-#### Step 4: 반복
-
-나머지 테스트들도 `/go` → `/mark` 반복
-
----
-
-### 예제 2: 수동 제어로 세밀하게 작업
-
-**시나리오**: 복잡한 비즈니스 로직 구현
-
-#### Step 1: 다음 테스트 확인
-
-```bash
-/next
-```
-
-#### Step 2: 실패하는 테스트 작성
-
-```bash
-/red
-```
-
-```python
-def test_user_registration_with_weak_password():
-    """약한 비밀번호는 거부되어야 함"""
-    with pytest.raises(WeakPasswordError):
-        User.register(
-            email="user@example.com",
-            password="123"
-        )
-```
-
-#### Step 3: 테스트 실행 (실패 확인)
-
-```bash
-/test-run
-```
-
-#### Step 4: 최소 코드 구현
-
-```bash
-/green
-```
-
-```python
-class User:
-    @staticmethod
-    def register(email, password):
-        if len(password) < 8:
-            raise WeakPasswordError("Password too short")
-        # ... 나머지 로직
-```
-
-#### Step 5: 테스트 실행 (통과 확인)
-
-```bash
-/test-run
-```
-
-#### Step 6: 리팩토링
-
-```bash
-/refactor
-```
-
-중복 제거, 매직 넘버를 상수로 추출 등
-
-#### Step 7: 완료
-
-```bash
-/mark
-```
-
----
-
-### 예제 3: Tidy First 워크플로우
-
-**시나리오**: 기능 추가 전에 코드 정리
-
-#### Step 1: 현재 상태 확인
-
-```bash
-/status
-```
-
-모든 테스트가 통과하는지 확인
-
-#### Step 2: 구조적 개선
-
-```bash
-/tidy
-```
-
-예: 긴 메서드를 작은 메서드들로 분리
-
-```python
-# Before (Tidy 전)
-def process_user(data):
-    # 50줄의 긴 메서드
-    ...
-
-# After (Tidy 후)
-def process_user(data):
-    user = extract_user_data(data)
-    validate_user(user)
-    save_user(user)
-    return user
-```
-
-#### Step 3: 테스트로 검증
-
-```bash
-/test-run
-```
-
-행동이 변하지 않았는지 확인
-
-#### Step 4: 구조적 변경 커밋
-
-```bash
-/commit-structural
-```
-
-#### Step 5: 이제 새 기능 추가
-
-```bash
-/go
-```
-
-#### Step 6: 행동 변경 커밋
-
-```bash
-/commit-behavioral
-```
+- **예제 1**: 간단한 기능 추가 (`/go` → `/mark` 반복)
+- **예제 2**: 수동 제어로 세밀하게 작업
+- **예제 3**: Tidy First 워크플로우
 
 ---
 
@@ -584,108 +158,57 @@ def process_user(data):
 
 ### 2. 작은 단계로 진행
 
-✅ **좋은 예**:
-- 한 번에 하나의 테스트
-- 한 번에 하나의 리팩토링
-- 작고 빈번한 커밋
+✅ 한 번에 하나의 테스트, 한 번에 하나의 리팩토링, 작고 빈번한 커밋
 
-❌ **나쁜 예**:
-- 여러 테스트를 한 번에 작성
-- 큰 리팩토링을 한 번에 수행
+❌ 여러 테스트를 한 번에 작성, 큰 리팩토링을 한 번에 수행
 
 ### 3. 테스트를 자주 실행
 
-**매번 테스트 실행**:
-- 테스트 작성 후 → `/test-run`
-- 코드 작성 후 → `/test-run`
-- 리팩토링 후 → `/test-run`
+테스트 작성 후, 코드 작성 후, 리팩토링 후 — 매번 `/test-run`
 
 ### 4. 구조적/행동적 변경 분리
 
-✅ **좋은 예**:
-```
-1. /tidy → /commit-structural
-2. /go → /commit-behavioral
-```
+✅ `/tidy` → `/commit-structural` → `/go` → `/commit-behavioral`
 
-❌ **나쁜 예**:
-```
-구조 변경과 기능 추가를 한 커밋에 섞음
-```
+❌ 구조 변경과 기능 추가를 한 커밋에 섞음
 
-### 5. Plan.md를 최신 상태로 유지
+### 5. 최소 구현 원칙
 
-- 새 아이디어가 생기면 `/plan-add`로 즉시 추가
-- 완료한 테스트는 `/mark`로 표시
-- 주기적으로 `/plan-view`로 진행 상황 확인
-
-### 6. 최소 구현 원칙
-
-GREEN 단계에서는 **가장 단순한 코드**를 작성하세요:
-
-```python
-# ✅ 좋은 예 (간단명료)
-def add(a, b):
-    return a + b
-
-# ❌ 나쁜 예 (과도한 구현)
-def add(a, b, operation='add'):
-    if operation == 'add':
-        return a + b
-    elif operation == 'subtract':
-        return a - b
-    # ... 테스트가 요구하지 않는 기능들
-```
+GREEN 단계에서는 테스트를 통과시키는 **가장 단순한 코드**만 작성하세요.
 
 ---
 
 ## 트러블슈팅
 
-### 문제: 테스트가 계속 실패함
+### 테스트가 계속 실패함
 
-**해결책**:
 1. `/test-run`으로 정확한 실패 원인 파악
 2. RED 단계인지 확인 (의도된 실패인가?)
 3. GREEN 단계라면 코드 재검토
 4. 필요시 `/red`부터 다시 시작
 
-### 문제: 어떤 명령어를 써야 할지 모르겠음
+### 어떤 명령어를 써야 할지 모르겠음
 
-**해결책**:
 1. `/status`로 현재 상태 확인
 2. 현재 단계에 맞는 명령어 사용:
    - RED → `/green` 또는 `/test-run`
    - GREEN → `/refactor` 또는 `/mark`
-   - REFACTOR → `/test-run` 또는 `/mark`
 
-### 문제: plan.md와 실제 진행이 안 맞음
+### plan.md와 실제 진행이 안 맞음
 
-**해결책**:
 1. `/plan-view`로 현재 plan 확인
 2. `/plan-add`로 누락된 테스트 추가
 3. 잘못된 마크가 있다면 plan.md 직접 수정
 
-### 문제: 구조적/행동적 변경이 섞임
+### 리팩토링 후 테스트 실패
 
-**해결책**:
-1. `git diff`로 변경 내용 확인
-2. 구조적 변경만 먼저 커밋: `/commit-structural`
-3. 나머지 변경 사항 되돌리기
-4. 행동적 변경 다시 구현
-5. `/commit-behavioral`로 커밋
-
-### 문제: 리팩토링 후 테스트 실패
-
-**해결책**:
-1. **즉시 변경 사항 되돌리기** (git checkout)
+1. **즉시 변경 사항 되돌리기** (`git checkout`)
 2. 더 작은 단위로 리팩토링
 3. 각 단계마다 `/test-run` 실행
 
 ---
 
 ## 치트 시트
-
-### 빠른 참조
 
 | 명령어 | 용도 | 사용 시점 |
 |--------|------|-----------|
@@ -720,29 +243,13 @@ def add(a, b, operation='add'):
 
 ---
 
-## 추가 리소스
-
-### 관련 문서
-- [CLAUDE.md](./CLAUDE.md) - TDD 및 Tidy First 원칙 상세 설명
-- [plan.md](./plan.md) - 현재 프로젝트 테스트 계획
-
 ### 참고 자료
+
 - Kent Beck - "Test-Driven Development: By Example"
 - Kent Beck - "Tidy First?"
 - Martin Fowler - "Refactoring"
-
-### 도움말
-- 명령어가 작동하지 않으면 `.claude/commands/` 디렉토리 확인
-- 테스트 실행 오류는 pytest 설정 확인
-- 추가 질문은 `/status`로 현재 상태를 먼저 파악하세요
+- [Worktree Parallel Skill 가이드](docs/worktree-parallel.md)
 
 ---
 
-# Additional Backups
-
-- Claude Code가 uv 를 활용하도록 하기 위해서는 `uv_package_management.md`의 내용을 `CLAUDE.md` 파일 끝부분에 복사하여 붙여넣으세요.
-- Git worktree를 이용해 병렬로 작업 굴리고싶으면 `GIT_WORKTREE_PARALLEL_WORKFLOW.md` 를 context로 넣으면서 환경 설정 해달라고 하세요.
-    - 환경 설정 다 되면 병렬 작업 수 만큼 터미널 열어서 작업시키면 됩니다. (더 좋은 방법 있으면 공유좀..)
-
----
 **Happy TDD! 🧪**

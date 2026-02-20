@@ -1,5 +1,3 @@
----
-
 # Package Management with `uv`
 
 These rules define strict guidelines for managing Python dependencies in this project using the `uv` dependency manager.
@@ -82,5 +80,3 @@ uv remove package-name --script script.py
 # Reinstall all script dependencies from lock file
 uv sync --script script.py
 ```
-
----
