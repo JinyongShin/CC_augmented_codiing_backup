@@ -8,6 +8,11 @@
 
 ### Step 1: Plan 작성
 
+```bash
+/tdd plan-init
+```
+
+또는 직접 작성:
 ```markdown
 ## Tests
 - [ ] Should accept valid email with @ symbol
@@ -18,7 +23,7 @@
 ### Step 2: 첫 번째 테스트 실행
 
 ```bash
-/go
+/tdd go
 ```
 
 Claude가 자동으로:
@@ -29,12 +34,12 @@ Claude가 자동으로:
 ### Step 3: 완료 표시
 
 ```bash
-/mark
+/tdd mark
 ```
 
 ### Step 4: 반복
 
-나머지 테스트들도 `/go` → `/mark` 반복
+나머지 테스트들도 `/tdd go` → `/tdd mark` 반복
 
 ---
 
@@ -45,13 +50,13 @@ Claude가 자동으로:
 ### Step 1: 다음 테스트 확인
 
 ```bash
-/next
+/tdd next
 ```
 
 ### Step 2: 실패하는 테스트 작성
 
 ```bash
-/red
+/tdd red
 ```
 
 ```python
@@ -67,13 +72,13 @@ def test_user_registration_with_weak_password():
 ### Step 3: 테스트 실행 (실패 확인)
 
 ```bash
-/test-run
+/tdd test-run
 ```
 
 ### Step 4: 최소 코드 구현
 
 ```bash
-/green
+/tdd green
 ```
 
 ```python
@@ -88,13 +93,13 @@ class User:
 ### Step 5: 테스트 실행 (통과 확인)
 
 ```bash
-/test-run
+/tdd test-run
 ```
 
 ### Step 6: 리팩토링
 
 ```bash
-/refactor
+/tdd refactor
 ```
 
 중복 제거, 매직 넘버를 상수로 추출 등
@@ -102,7 +107,7 @@ class User:
 ### Step 7: 완료
 
 ```bash
-/mark
+/tdd mark
 ```
 
 ---
@@ -114,7 +119,7 @@ class User:
 ### Step 1: 현재 상태 확인
 
 ```bash
-/status
+/tdd status
 ```
 
 모든 테스트가 통과하는지 확인
@@ -122,7 +127,7 @@ class User:
 ### Step 2: 구조적 개선
 
 ```bash
-/tidy
+/tdd tidy
 ```
 
 예: 긴 메서드를 작은 메서드들로 분리
@@ -144,7 +149,7 @@ def process_user(data):
 ### Step 3: 테스트로 검증
 
 ```bash
-/test-run
+/tdd test-run
 ```
 
 행동이 변하지 않았는지 확인
@@ -152,17 +157,17 @@ def process_user(data):
 ### Step 4: 구조적 변경 커밋
 
 ```bash
-/commit-structural
+/tdd commit-structural
 ```
 
 ### Step 5: 이제 새 기능 추가
 
 ```bash
-/go
+/tdd go
 ```
 
 ### Step 6: 행동 변경 커밋
 
 ```bash
-/commit-behavioral
+/tdd commit-behavioral
 ```
