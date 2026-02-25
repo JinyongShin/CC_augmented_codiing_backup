@@ -46,7 +46,7 @@ cp -r worktree-parallel/ .claude/skills/worktree-parallel/
 
 ### plan.md 작성
 
-`/tdd plan-init`으로 대화형으로 생성하거나, `plan.md.example`을 참고해 직접 작성합니다.
+`/tdd plan-init`으로 대화형으로 생성합니다.
 
 ```markdown
 ## Tests
