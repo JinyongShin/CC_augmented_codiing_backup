@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: quarterly-status-report
+expected_outcome: |
+  A shareable, well-structured HTML document with diagrams, tables, decisions with options, and plain prose.
