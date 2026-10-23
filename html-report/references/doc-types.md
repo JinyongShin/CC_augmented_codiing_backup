@@ -94,6 +94,8 @@ For a person who will run steps by hand (QA review, release check, setup).
 | Troubleshooting | Symptom → cause → fix table |
 | Finish | How to close down and how to report results |
 
+When a check must run on someone else's machine or environment, write each check so they can run it without asking: the exact command, what to look at, the pass criterion, what each result means, and a reply format ("C1: 정상/재현 + 출력 일부"). Do not write vague checks such as "배포 후 확인".
+
 ## 7. Proposal
 
 Problem (with evidence) → proposed change → alternatives considered (table with pros/cons) → cost and effort → risks → ask (what decision, by when).

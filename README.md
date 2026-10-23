@@ -10,6 +10,7 @@ Kent Beck의 Test-Driven Development와 Tidy First 원칙을 Claude Code에 적�
 | `rules/uv.md` | `.claude/rules/uv.md` | uv 패키지 매니저 정책 (선택, Python 프로젝트) |
 | `worktree-parallel/` | `.claude/skills/worktree-parallel/` | 병렬 개발 skill (선택) |
 | `obsidian-wiki/` | `.claude/skills/` | Obsidian 기반 지식 베이스(wiki) skill 모음 (선택) |
+| `html-report/` | `.claude/skills/html-report/` | 보고서·계획서 등 공유용 HTML 문서 작성 skill (선택) |
 
 ---
 
@@ -48,6 +49,10 @@ cp -r worktree-parallel/ .claude/skills/worktree-parallel/
 #    Obsidian 기반 지식 베이스(second brain)를 구축/운영할 때 사용
 #    12개 skill을 한 번에 .claude/skills/ 로 복사
 cp -r obsidian-wiki/* .claude/skills/
+
+# 5. HTML 보고서 skill 설치 (선택)
+#    보고서, 계획서, 제안서 같은 공유용 HTML 문서를 만들 때 사용
+cp -r html-report/ .claude/skills/html-report/
 ```
 
 > Obsidian wiki skill 모음의 구성 철학과 사용법은 **[obsidian-wiki/README.md](obsidian-wiki/README.md)** 를 참조하세요.

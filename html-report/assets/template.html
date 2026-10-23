@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <style>
-  /* report-html template. Light theme only: no dark-mode media query, no theme toggle. */
+  /* html-report template. Light theme only: no dark-mode media query, no theme toggle. */
   :root {
     --ground: #FAF9F6;
     --surface: #FFFFFF;
@@ -177,9 +177,16 @@
   .compare p, .compare li { font-size: 14.5px; line-height: 1.75; }
 
   /* ─────────── narrow screens ─────────── */
+  /* at 960px or narrower the rail becomes a sticky horizontal bar at the top */
   @media (max-width: 960px) {
     .shell { grid-template-columns: minmax(0, 1fr); }
-    .rail { display: none; }
+    .rail { position: sticky; top: 0; z-index: 20; height: auto; display: block; padding: 0 16px; border-right: 0; border-bottom: 1px solid var(--rule); overflow: visible; }
+    .rail-mark, .rail-foot { display: none; }
+    .rail-nav { flex-direction: row; gap: 2px; overflow-x: auto; scrollbar-width: none; padding: 6px 0; }
+    .rail-nav::-webkit-scrollbar { display: none; }
+    .rail-nav a { display: flex; flex: none; gap: 6px; white-space: nowrap; padding: 6px 10px; border-left: 0; border-bottom: 2px solid transparent; border-radius: 4px 4px 0 0; }
+    .rail-nav a.on { border-bottom-color: var(--accent); }
+    section[id] { scroll-margin-top: 64px; }
     .main { padding: 0 16px 100px; }
   }
   @media (max-width: 720px) {
@@ -187,6 +194,7 @@
     .flow-step + .flow-step { border-left: 0; border-top: 1px solid var(--rule); }
     .compare { grid-template-columns: 1fr; }
     .cover-meta { grid-template-columns: 1fr; }
+    code { white-space: normal; overflow-wrap: anywhere; }
   }
 
   @media print {
@@ -380,7 +388,7 @@ flowchart TD
 
   </main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js"></script>
 <script>
   mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose', flowchart: { htmlLabels: true, curve: 'basis' }, themeVariables: { fontFamily: '"IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif', fontSize: '14px' } });
 </script>
@@ -389,10 +397,21 @@ flowchart TD
   (function () {
     var links = Array.prototype.slice.call(document.querySelectorAll('.rail-nav a'));
     var sections = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+    var nav = document.querySelector('.rail-nav'), last = -1;
     function sync() {
       var pos = window.scrollY + window.innerHeight * 0.25, idx = 0;
       for (var i = 0; i < sections.length; i++) { if (sections[i] && sections[i].offsetTop <= pos) { idx = i; } }
+      /* at the bottom of the page, a short last section never reaches the threshold */
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) { idx = sections.length - 1; }
       links.forEach(function (a, i) { a.classList.toggle('on', i === idx); });
+      if (idx !== last) {
+        last = idx;
+        /* top bar on narrow screens: keep the current item in view */
+        if (nav.scrollWidth > nav.clientWidth) {
+          var a = links[idx];
+          nav.scrollTo({ left: a.offsetLeft - nav.offsetLeft - (nav.clientWidth - a.offsetWidth) / 2 });
+        }
+      }
     }
     var ticking = false;
     window.addEventListener('scroll', function () {

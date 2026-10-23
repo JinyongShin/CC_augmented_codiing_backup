@@ -6,7 +6,7 @@ ASD-STE100 is a controlled language for maintenance manuals: one reading, no sec
 
 | Rule | Do | Not |
 |---|---|---|
-| One idea per sentence | "서버는 10/10 에 분리됐다. 그 뒤 Chalk 를 둘 이유가 없어졌다." | "서버가 10/10 에 분리됐고 그래서 Chalk 를 둘 이유가 없어졌으며…" |
+| One idea per sentence | "서버는 10/10 에 분리됐다. 그 뒤 예전 게이트웨이를 둘 이유가 없어졌다." | "서버가 10/10 에 분리됐고 그래서 예전 게이트웨이를 둘 이유가 없어졌으며…" |
 | Short sentences | Procedural ≤ 20 words, descriptive ≤ 25. Paragraph ≤ 6 sentences | Long chains joined by -고, -며, -는데, "and", "which" |
 | Active voice, named actor | "개발 팀이 고친다." "The release job uploads the file." | "수정이 이루어진다." "The file is uploaded." |
 | Instructions are imperative | "Update branch 를 누른다." "Run `npm test`." | "누르시면 될 것 같습니다." "You may want to run…" |

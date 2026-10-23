@@ -1,13 +1,13 @@
 ---
-name: report-html
-description: Build a polished, self-contained HTML document that a person will read, review, present, or share — status reports, project/migration/implementation plans, design docs, decision memos, investigation results, weekly or periodic reports, review/procedure guides, proposals, and HTML slide decks — with Mermaid diagrams, tables, and plain, unambiguous prose. Use this whenever the user asks for a 보고서, 보고, 계획서, 기획서, 제안서, 정리해서 보여줘, 현황, 위클리, 결정 문서, 검수 가이드, 발표 자료, 슬라이드, "html로", a report/plan/write-up/one-pager/RFC/design doc, or any answer that is a document someone will read rather than a short chat reply — even if the word HTML is never used. Not for app UIs, dashboards with live data, or editing an existing website.
+name: html-report
+description: Build a polished, self-contained HTML document that a person will read, review, present, or share — status reports, project/migration/implementation plans, design docs, decision memos, investigation results, weekly or periodic reports, review/procedure guides, proposals, and HTML slide decks — with Mermaid diagrams, tables, and plain, unambiguous prose. Use this when the user asks for a document: 보고서, 보고, 계획서, 기획서, 제안서, 정리해서 보여줘, 현황, 위클리, 결정 문서, 검수 가이드, 발표 자료, 슬라이드, "html로", a report/plan/write-up/one-pager/RFC/design doc. Do not use it for ordinary chat answers. Not for app UIs, dashboards with live data, or editing an existing website.
 ---
 
-# report-html
+# html-report
 
 Produce a single HTML file that reads like a well-edited technical document: one reading column, a left navigation rail, clear type hierarchy, diagrams that show the real mechanism, tables for anything comparable, and short, literal sentences. The reader may have no context, may be on a phone, and may be presenting the page to a room.
 
-These rules came from one owner's repeated corrections over months of real reports. Each rule states its reason. When a case is not covered, follow the reason, not the letter.
+These rules came from repeated corrections on real reports. Each rule states its reason. When a case is not covered, follow the reason, not the letter.
 
 ## Workflow
 
@@ -16,15 +16,21 @@ These rules came from one owner's repeated corrections over months of real repor
 3. **Gather facts, and verify them.** Read the source material yourself: repository files, issues, PRs, logs, settings via API. Record for each claim whether you measured it or inferred it. Check that every path, command, and link you will cite exists. A wrong link or command in a shared document costs more trust than it saves time.
 4. **Propose the structure first** for a new document: section titles plus one sentence per section that states its core message. Wait for approval. Skip this only for a routine update of a known shape, or when the user says to write directly. This step exists because rewriting a finished document is far more expensive than moving a heading.
 5. **Write the file.** Copy `assets/template.html`, fill the cover, rail, and sections, delete unused sample components. Use diagrams (`references/diagrams.md`) and tables generously — they are what makes the page readable at a glance. Write prose to `references/writing.md`.
-6. **Check before delivery.** Run `python3 scripts/check_report.py <file> [--shared]` and fix what it reports. Then open the page in a browser if one is available and confirm every Mermaid diagram rendered (no "Syntax error" text) and the page does not scroll sideways at phone width.
-7. **Deliver.** Give the absolute path and a short summary of what the document says and what the reader must decide. Follow the owner conventions at the end of this file for delivery channel and notifications.
+6. **Check before delivery.** Run `python3 scripts/check_report.py <file> [--shared]` and fix what it reports. Then run `bash scripts/verify.sh <absolute path to file> [output dir] [section ids]` (macOS, headless Chrome). It confirms every Mermaid diagram rendered (no `aria-roledescription="error"`), saves a screenshot per section (`sec-<id>.png`), and lists elements that overflow at 400px width (`none` is the pass result). Open the section screenshots with Read and check that diagrams are not too wide or too small. Report every check listed under "건너뛴 검사" as not verified.
+7. **Deliver.** Save the file where the user said. If the user did not say, save it in the current project root and give the absolute path. Add the file to git or commit it only when the user asks. Give a short summary of what the document says and what the reader must decide.
 8. **Revise in place.** Keep the same file path across revisions so links stay valid. Mark the revision on the cover (2판, v3). Keep the previous version as a scratch copy if the change is large.
+   - When a fact changes state (미확인 → 확인됨, 추정 → 실측), search the whole file and update every place that shows it: summary, badges, tables, next steps.
+   - When the user asks to remove something, check the intent if it is unclear: "do not use this source" or "this item is out of scope". If you cannot ask, keep it and add a caution instead of deleting it.
 
 ## Output rules
 
+### 0. The user's language
+
+Write the document and the reply in the language the user writes in. Code, paths, and quoted text stay verbatim.
+
 ### 1. One file, light theme, works offline except for fonts and Mermaid
 
-A single `.html` file with inline CSS. External resources: Google Fonts and the Mermaid script from `cdn.jsdelivr.net` only. Light theme only — no `prefers-color-scheme`, no dark palette, no theme toggle. The owner asked to remove dark mode five times; printed and projected pages also read better light.
+A single `.html` file with inline CSS. External resources: Google Fonts and the Mermaid script from `cdn.jsdelivr.net` only. Light theme only — no `prefers-color-scheme`, no dark palette, no theme toggle. Reviewers repeatedly asked to remove dark mode; printed and projected pages also read better light.
 
 Do not publish to a hosting service (Artifact, gist, pastebin) unless the user asks after review. The user edits and discusses the file before it goes anywhere.
 
@@ -36,7 +42,7 @@ Every readable block — paragraphs, tables, boxes, diagrams — uses the same w
 
 Title, section heading, subheading, lede, body, box text, and table text each look different (the template scale: 35 / 26 / 19 / 19.5 / 16.5 / 15.5 / 14.5 px). Do not invent sizes per section.
 
-Titles are names of two to five words. The explanation goes in the lede under the title. "Chalk 분리 계획", not "Chalk 를 studio 에서 분리하고 별도 배포하기 위한 계획과 결정 사항 정리".
+Titles are names of two to five words. The explanation goes in the lede under the title. "결제 모듈 분리 계획", not "결제 모듈을 주문 서비스에서 분리하고 별도 배포하기 위한 계획과 결정 사항 정리".
 
 Section headings (h2, h3) are **labels, not sentences**. A label names what the section is about so the reader can find it in the rail: "요약", "한 줄 결론", "지금 구조", "결정 사항", "위험과 되돌리기". Do not write the section's conclusion as its heading — "성과는 좋고, 결정 1건이 남았다", "URL 을 지키며 옮긴다" read as slogans and make the rail hard to scan. Put the claim in the `.thesis` or `.lede` right under the heading instead. "한 줄 결론" is a good default for the summary heading, but any short noun phrase that names the section works.
 
@@ -60,11 +66,11 @@ When a choice is open, do not stop to ask in chat — write it into the document
 
 ### 7. Separate fact from guess, and scope every count
 
-Mark what was measured and what was inferred: badges (`b-ok`, `b-warn`, `b-plan`, `b-none`) or the words "실측 / 추정" (measured / estimated). Every number states its set and date: "35개 하위 이슈 중 21개 (10/12 기준)", not "21 done". Unscoped counts were the most frequent correction.
+Mark what was measured and what was inferred: badges (`b-ok`, `b-warn`, `b-plan`, `b-none`) or the words "실측 / 추정" (measured / estimated). Every number states its set and date: "35개 하위 이슈 중 21개 (10/12 기준)", not "21 done". Unscoped counts were the most frequent correction. When you cite the same file from more than one branch or version, tag each line reference with its base (`[main]`, `[feature]`, `[lib 1.2]`) and list each base commit or version on the cover.
 
 ### 8. Built to present
 
-The page is often projected and walked through by scrolling. Keep the left rail with scroll tracking. Start with a summary block (`.thesis` one-liner plus `.tldr` or KPIs) so the first screen answers "what is this and what do you need from me".
+The page is often projected and walked through by scrolling. Keep the left rail with scroll tracking. At 960px or narrower the same rail becomes a sticky horizontal bar at the top; you write the navigation once. Start with a summary block (`.thesis` one-liner plus `.tldr` or KPIs) so the first screen answers "what is this and what do you need from me".
 
 ### 9. Plain, literal prose
 
@@ -106,12 +112,3 @@ A document is *shared* when anyone other than the owner will read it. Then:
 | `ul.plain`, `ol.steps` | Lists; `steps` for ordered procedures, one action per item |
 
 Use each box for its stated role only. When every paragraph sits in a box, nothing stands out.
-
-## Owner conventions (this install)
-
-These are the defaults of the person this skill was built for. Another user can edit or delete this section; the rest of the skill does not depend on it.
-
-- Reply in Korean; write documents in Korean unless asked otherwise.
-- Save location: the project's private notes folder outside any git working tree (for HypeProof: `<workspace>/_worklog/…`; Chalk work under `_worklog/chalk/po/reports/`, then one line in `_worklog/chalk/index.md`). Never save inside a repository working tree; always use absolute paths.
-- After writing or revising a document: send the file with `SendUserFile`, and send a `PushNotification` that leads with what the reader must act on (e.g. "계획서 2판 — 결정 12건 검토 필요"). Every revision, not only the first.
-- Team-facing reports (weekly reports, PR comments, plans shared with the team) are *shared documents* — apply the sharing rules.

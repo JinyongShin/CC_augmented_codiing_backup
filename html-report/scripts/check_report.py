@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static checks for a report-html document.
+"""Static checks for an html-report document.
 
 Usage:
   python3 check_report.py FILE.html [--shared] [--forbid REGEX ...] [--max-words N]

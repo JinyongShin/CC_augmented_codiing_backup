@@ -13,7 +13,7 @@ flowchart LR
   <figcaption>그림 1. What the reader should notice</figcaption>
 </figure>
 ...
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js"></script>
 <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose',
   flowchart: { htmlLabels: true, curve: 'basis' },
   themeVariables: { fontFamily: '"IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif', fontSize: '14px' } });</script>
@@ -23,13 +23,13 @@ flowchart LR
 
 ## Syntax rules that prevent "Syntax error"
 
-- Quote every label: `A["강사 모드<br/>src/chalk"]`. Quotes protect parentheses, slashes, colons, and Korean.
+- Quote every label: `A["관리자 화면<br/>src/admin"]`. Quotes protect parentheses, slashes, colons, and Korean.
 - Line breaks inside labels: `<br/>` (needs `htmlLabels: true`).
 - Edge labels: `A -->|"요청 전달"| B`.
-- Subgraph with a display name: `subgraph SERVICE["hypeproof-service (비공개)"]` … `end`. Node ids are ASCII without spaces.
+- Subgraph with a display name: `subgraph SERVICE["order-service (비공개)"]` … `end`. Node ids are ASCII without spaces.
 - Decision diamond: `G1{"관문 1<br/>조건을 만족하나"}`; rounded terminal: `START(["시작"])`.
 - Do not use `end` as a node id. Avoid `;` at line ends. Avoid `#` and unescaped `"` inside labels.
-- In `sequenceDiagram`, participant aliases are ASCII: `participant C as hypeproof-chalk`. Message text is free text after `:`.
+- In `sequenceDiagram`, participant aliases are ASCII: `participant C as web-app`. Message text is free text after `:`.
 - The HTML file is the source: do not escape `<br/>` as `&lt;br/&gt;` inside `<pre class="mermaid">`.
 
 ## Patterns
@@ -57,6 +57,17 @@ flowchart TD
   G1 -->|"예"| DONE(["완료"])
 ```
 
+**Branch and merge order.** `gitGraph` for PR split plans and release branches. Keep branch names short and without spaces; write the real names in the text. Commit ids may be Korean but must be unique. Use `%%{init: {'gitGraph': {'mainBranchName': 'develop'}}}%%` only when the main branch is not `main`.
+
+```
+gitGraph
+  commit id: "기준"
+  branch fix-a
+  commit id: "버그 수정"
+  checkout main
+  merge fix-a
+```
+
 **Release / request sequence.** `sequenceDiagram` with `autonumber`; one participant per system or role; messages in the order they happen.
 
 **Roadmap without dates.** `flowchart LR` of work packages with dependency arrows. Use `gantt` only when real dates exist.
@@ -73,7 +84,7 @@ flowchart TD
 
 ## Check
 
-After writing, open the page and confirm each `pre.mermaid` turned into an SVG and none shows "Syntax error in text". In a browser console:
+After writing, run `scripts/verify.sh` (see SKILL.md workflow step 6). It counts rendered diagrams, flags syntax errors, saves section screenshots, and checks 400px overflow. Without Chrome, open the page and confirm each `pre.mermaid` turned into an SVG and none shows "Syntax error in text". In a browser console:
 
 ```js
 [...document.querySelectorAll('.mermaid')].map(e => !e.querySelector('svg') ? 'NOSVG' : /Syntax error in text|Parse error/.test(e.textContent) ? 'ERR' : 'ok')
