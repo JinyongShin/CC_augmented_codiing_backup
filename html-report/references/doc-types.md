@@ -23,13 +23,13 @@ The strongest type. Experienced reviewers expect these sections (common to Googl
 | 00 | Summary | What changes, how, why now | thesis + `.tldr` + small "where things end up" Mermaid |
 | 01 | Background | What exists today, what problem, why now. 2–3 short paragraphs, links for detail. Decisions already made (premises) as a table | table |
 | 02 | Goals and non-goals | Measurable outcomes; things that could be goals but are explicitly out of scope | `.compare` |
-| 03 | Current structure | Components, where code/data lives, coupling points | Mermaid flowchart with subgraphs + table with links |
-| 04 | Target structure | Same picture after the change; who owns what | Mermaid + ownership table |
+| 03 | Current structure | Components, where code/data lives, coupling points | Mermaid flowchart with subgraphs, or a `fig-svg` figure (SKILL.md rule 5) + table with links |
+| 04 | Target structure | Same picture after the change; who owns what | Mermaid or `fig-svg`, same layout as current + ownership table |
 | 05 | Overall flow | All phases end to end, with gates and rollback paths | Mermaid flowchart TD with decision diamonds |
 | 06 | Phase plan | Per phase: entry condition, work, exit criterion (gate), rollback | table; verification table |
 | 07 | Release / rollout (opt) | How changes reach users | Mermaid sequenceDiagram |
 | 08 | Settings / configuration (opt) | Exact values to apply, copied from the measured source | table |
-| 09 | Decisions and alternatives considered | Overview table, then per-decision options with pros/cons and the recommendation | tables + `.ruling` |
+| 09 | Decisions and alternatives considered | Overview table, then per-decision options with pros/cons and the recommendation, marked agreed or proposal | tables + `.ruling` |
 | 10 | Roles | Who executes, approves, is consulted, is informed (RACI) | table |
 | 11 | Risks and rollback | Risk, impact, mitigation; explicit rollback triggers and who calls them | table + list |
 | 12 | After this (opt) | What work continues once the plan is done | Mermaid flowchart LR + table |
@@ -47,7 +47,7 @@ Rules that matter for plans:
 |---|---|
 | Summary | The decision needed, by when, and the recommendation |
 | Context | Why now; what is blocked |
-| Decisions | Overview table → one block per decision (repository/file, context, if undecided, options table with pros and cons, recommendation) |
+| Decisions | Overview table → one block per decision (repository/file, context, if undecided, options table with pros and cons, recommendation marked agreed or proposal) |
 | Consequences | What each choice changes downstream (table) |
 | Next steps | What happens after each answer, and who acts |
 

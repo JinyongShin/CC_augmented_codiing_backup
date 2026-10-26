@@ -11,6 +11,9 @@ Checks:
   - no <br> inside <p>
   - external scripts/styles only from allowed hosts
   - each <pre class="mermaid"> sits inside <figure class="diagram"> with a <figcaption>
+  - flowchart LR rows with more than 5 nodes (WARN: labels shrink below 11px)
+  - figure.fig-svg: viewBox, role="img", aria-label; no <script>/<style>/<foreignObject> inside
+  - figure.ix: every data-k (button or box) and data-default has a data-panel; boxes are focusable
   - --shared: no local paths, no file:// links, plus --forbid patterns
   - long sentences in prose (WARN), hedge words (WARN)
 """
@@ -61,7 +64,7 @@ def main() -> int:
 
     body = src[src.find("<body"):]
     mermaids = re.findall(r"<pre class=\"mermaid\">", body)
-    figs = re.findall(r"<figure class=\"diagram\">(.*?)</figure>", body, re.S)
+    figs = re.findall(r"<figure class=\"diagram[^\"]*\"[^>]*>(.*?)</figure>", body, re.S)
     in_fig = sum(f.count('<pre class="mermaid">') for f in figs)
     if mermaids and in_fig < len(mermaids):
         warns.append(f"{len(mermaids) - in_fig} mermaid block(s) outside figure.diagram")
@@ -70,8 +73,42 @@ def main() -> int:
             warns.append("diagram without figcaption")
     if mermaids and "mermaid.min.js" not in src:
         errors.append("mermaid blocks present but mermaid script missing")
-    if not mermaids:
-        warns.append("no Mermaid diagram — consider one for flows, structure, or phases")
+    for m in re.findall(r"<pre class=\"mermaid\">(.*?)</pre>", body, re.S):
+        if re.match(r"\s*(flowchart|graph)\s+(LR|RL)\b", m) and "subgraph" not in m:
+            nodes = set(re.findall(r"\b([A-Za-z_]\w*)\s*(?:\[|\(|\{)", m))
+            if len(nodes) > 5:
+                warns.append(f"flowchart LR with {len(nodes)} nodes (keep 5 or fewer per row; use TD, split, or .flow — ignore if it already wraps into short rows)")
+    svgfigs = re.findall(r"<figure class=\"diagram fig-svg[^\"]*\"([^>]*)>(.*?)</figure>", body, re.S)
+    for fattrs, f in svgfigs:
+        svg = re.search(r"<svg\b([^>]*)>(.*?)</svg>", f, re.S)
+        if not svg:
+            errors.append("figure.fig-svg without an inline <svg>")
+            continue
+        attrs, inner = svg.groups()
+        for need in ("viewBox=", 'role="img"', "aria-label="):
+            if need not in attrs:
+                errors.append(f"fig-svg <svg> missing {need.rstrip('=')}")
+        for bad in ("<script", "<style", "<foreignObject"):
+            if bad in inner:
+                errors.append(f"fig-svg contains {bad}> (keep the SVG self-contained; style it from the page CSS)")
+        if re.search(r"(fill|stroke)=\"#[0-9A-Fa-f]{3,6}\"", inner):
+            warns.append("fig-svg uses literal colors; use the template classes (.nd, .ed, .acc, .k-acc) instead")
+        if "data-k=" in f:
+            panels = set(re.findall(r"data-panel=\"([^\"]+)\"", f))
+            keys = set(re.findall(r"data-k=\"([^\"]+)\"", f))
+            dflt = re.search(r"data-default=\"([^\"]+)\"", fattrs)
+            if dflt:
+                keys.add(dflt.group(1))
+            for k in sorted(keys - panels):
+                errors.append(f"interactive figure: key {k!r} has no data-panel")
+            for g in re.findall(r"<g\b[^>]*data-k=[^>]*>", inner):
+                if "tabindex=" not in g or 'role="button"' not in g:
+                    warns.append("clickable SVG box without tabindex=\"0\" role=\"button\" (keyboard users cannot reach it)")
+                    break
+    if svgfigs and 'id="mk"' not in body:
+        warns.append("fig-svg present but the shared arrowhead <defs> (#mk, #mk-on, …) is missing")
+    if not mermaids and not svgfigs:
+        warns.append("no diagram — consider one for flows, structure, or phases")
 
     if a.shared:
         visible = re.sub(r"<(script|style)\b.*?</\1>", " ", body, flags=re.S | re.I)
@@ -100,7 +137,7 @@ def main() -> int:
         print("WARN ", w)
     if len(warns) > 40:
         print(f"WARN  … {len(warns) - 40} more")
-    print(f"{'FAIL' if errors else 'OK'}: {len(errors)} error(s), {len(warns)} warning(s), {len(mermaids)} diagram(s)")
+    print(f"{'FAIL' if errors else 'OK'}: {len(errors)} error(s), {len(warns)} warning(s), {len(mermaids) + len(svgfigs)} diagram(s)")
     return 1 if errors else 0
 
 

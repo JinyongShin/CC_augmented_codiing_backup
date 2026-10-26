@@ -16,7 +16,7 @@ These rules came from repeated corrections on real reports. Each rule states its
 3. **Gather facts, and verify them.** Read the source material yourself: repository files, issues, PRs, logs, settings via API. Record for each claim whether you measured it or inferred it. Check that every path, command, and link you will cite exists. A wrong link or command in a shared document costs more trust than it saves time.
 4. **Propose the structure first** for a new document: section titles plus one sentence per section that states its core message. Wait for approval. Skip this only for a routine update of a known shape, or when the user says to write directly. This step exists because rewriting a finished document is far more expensive than moving a heading.
 5. **Write the file.** Copy `assets/template.html`, fill the cover, rail, and sections, delete unused sample components. Use diagrams (`references/diagrams.md`) and tables generously — they are what makes the page readable at a glance. Write prose to `references/writing.md`.
-6. **Check before delivery.** Run `python3 scripts/check_report.py <file> [--shared]` and fix what it reports. Then run `bash scripts/verify.sh <absolute path to file> [output dir] [section ids]` (macOS, headless Chrome). It confirms every Mermaid diagram rendered (no `aria-roledescription="error"`), saves a screenshot per section (`sec-<id>.png`), and lists elements that overflow at 400px width (`none` is the pass result). Open the section screenshots with Read and check that diagrams are not too wide or too small. Report every check listed under "건너뛴 검사" as not verified.
+6. **Check before delivery.** Run `python3 scripts/check_report.py <file> [--shared]` and fix what it reports. Then run `bash scripts/verify.sh <absolute path to file> [output dir] [section ids]` (macOS, headless Chrome), for example `bash scripts/verify.sh /abs/path/report.html /tmp/report-check s0 s2 s4`. Give section ids as separate arguments; omit them to check every `<section id>`. It confirms every Mermaid diagram rendered (no `aria-roledescription="error"`), prints the smallest on-screen label size per figure (`!!` below 10px: split or redraw that figure; `!` 10–11px: check the screenshot), saves a screenshot per section (`sec-<id>.png`), and lists elements that overflow at 400px width (`none` is the pass result). Open the section screenshots with Read and check that diagrams are not too wide or too small. Report every check listed under "건너뛴 검사" as not verified.
 7. **Deliver.** Save the file where the user said. If the user did not say, save it in the current project root and give the absolute path. Add the file to git or commit it only when the user asks. Give a short summary of what the document says and what the reader must decide.
 8. **Revise in place.** Keep the same file path across revisions so links stay valid. Mark the revision on the cover (2판, v3). Keep the previous version as a scratch copy if the change is large.
    - When a fact changes state (미확인 → 확인됨, 추정 → 실측), search the whole file and update every place that shows it: summary, badges, tables, next steps.
@@ -30,7 +30,7 @@ Write the document and the reply in the language the user writes in. Code, paths
 
 ### 1. One file, light theme, works offline except for fonts and Mermaid
 
-A single `.html` file with inline CSS. External resources: Google Fonts and the Mermaid script from `cdn.jsdelivr.net` only. Light theme only — no `prefers-color-scheme`, no dark palette, no theme toggle. Reviewers repeatedly asked to remove dark mode; printed and projected pages also read better light.
+A single `.html` file with inline CSS. External resources: Google Fonts and the Mermaid script from `cdn.jsdelivr.net` only. Inline SVG drawn into the file is allowed. Light theme only — no `prefers-color-scheme`, no dark palette, no theme toggle. Reviewers repeatedly asked to remove dark mode; printed and projected pages also read better light.
 
 Do not publish to a hosting service (Artifact, gist, pastebin) unless the user asks after review. The user edits and discusses the file before it goes anywhere.
 
@@ -54,14 +54,19 @@ Someone joining the team today must understand the page without asking. Explain 
 
 Draw systems, flows, phases, and change. Use Mermaid (`references/diagrams.md`) for anything with arrows: architecture, data flow, phase flow with gates, sequences, timelines. Use the HTML components (`.flow`, `.compare`, `.kpis`, `.bars`, `.tldr`) for simple step rows, as-is/to-be, headline numbers, and progress. A diagram must show the real mechanism — real component names, real direction of calls. Give each diagram a numbered caption that says what to notice.
 
+Keep labels readable: a `flowchart LR` row holds 5 nodes or fewer. Mermaid shrinks a wide diagram to the column, and 7 nodes in a row drop labels below 9px. Past 5, switch to `TD`, split the figure, or use `.flow`.
+
+For the one to three figures that carry the document's core mechanism (system structure, data path, how the change works), draw an inline SVG figure (`figure.diagram.fig-svg`) when the `artifact-diagramming` skill is available in the session: load it first and follow its drawing guidance. This skill's rules win where they differ: light theme only, colors from the template classes, interaction only through the template's `figure.ix` frame (buttons, boxes, and a panel; select mode or step mode), never published. When that skill is not available, use Mermaid for these figures too. See `references/diagrams.md` → SVG figures.
+
 Use a table whenever three or more items share attributes. Comparisons, options, phases, roles, risks, settings, and glossaries are tables, not paragraphs.
 
 ### 6. Decisions stand alone
 
 When a choice is open, do not stop to ask in chat — write it into the document so the reader decides while reading:
 
-- Start the decision section with an overview table: id, topic, recommendation, what it blocks.
+- Start the decision section with an overview table: id, topic, recommendation, basis of the recommendation (agreed or proposal), what it blocks.
 - For each decision: what it changes (repository/file, or "none"), why it must be decided now, what stays blocked if undecided, an options table with **pros and cons for every option**, and the recommendation with its reason (`.ruling` box).
+- State where each recommendation comes from. If a person or record already agreed on it, say who and when and link the record (`권장 A · 합의됨`). If the source lists options but no decision and you add the recommendation yourself, mark it as this document's proposal: use `.ruling.proposal` with the tag `제안 A · 미합의`, and add one line in the document's language, such as "이 권장안은 이 문서의 제안이며 합의된 결정이 아니다". In the overview table, show the same with a `b-ok 합의` or `b-plan 제안` badge. A reader must never take your proposal for an agreed decision.
 - Write each decision so it can be read alone, without scrolling back. The reader jumps straight to it.
 
 ### 7. Separate fact from guess, and scope every count
@@ -102,10 +107,13 @@ A document is *shared* when anyone other than the owner will read it. Then:
 | `.kpis` · `.bars` | Headline numbers · progress per phase |
 | `.sec-head` + `.eyebrow` + `.lede` | Section header with number and one-sentence core |
 | `figure.diagram` > `pre.mermaid` + `figcaption` | A Mermaid diagram with a numbered caption |
+| `figure.diagram.fig-svg` > `.svg-scroll` > `svg` + `figcaption` | A hand-drawn SVG of the core mechanism (`.nd` boxes, `.ed` edges) |
+| `figure.fig-svg.ix` + `.fig-tabs` + `.fig-panel` | Interactive SVG: buttons or boxes pick a key and the panel shows its detail; select mode highlights a path, step mode builds the picture up |
 | `table` in `.t-wrap` | Tables; `.t-key` first column, `.t-num` numbers, `caption` states scope |
 | `.compare` | Two columns: as-is / to-be, goals / non-goals |
 | `.flow` | Simple horizontal step row without branching |
 | `.ruling` + `.alt` | The document's recommendation, with the other options |
+| `.ruling.proposal` | A recommendation this document adds without an agreed decision or source (amber) |
 | `.flag` / `.flag.n` | Conflict or gap (red) / caution or limit (amber); put a caution *before* the step it applies to |
 | `.quote` | Someone else's words, with source |
 | `.badge` `.b-ok/.b-warn/.b-plan/.b-none` | Done / partial / planned / missing |

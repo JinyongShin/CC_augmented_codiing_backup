@@ -141,6 +141,9 @@
   .ruling { background: var(--surface); border: 1px solid var(--rule-strong); border-top: 3px solid var(--accent); padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
   .ruling-tag { font-family: var(--f-mono); font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
   .ruling p { font-size: 15.5px; line-height: 1.8; }
+  /* ruling.proposal: a recommendation this document adds, not backed by an agreed decision or the source */
+  .ruling.proposal { border-top-color: var(--warn); }
+  .ruling.proposal .ruling-tag { color: var(--warn); }
   .alt { border-top: 1px dashed var(--rule-strong); padding-top: 12px; font-size: 14px; line-height: 1.75; color: var(--ink-soft); }
   .alt b { color: var(--ink); font-weight: 600; }
 
@@ -202,9 +205,64 @@
     .shell { grid-template-columns: minmax(0, 1fr); }
     section { break-inside: avoid-page; }
   }
+  figure { margin: 0; }
   .diagram { background: var(--surface); border: 1px solid var(--rule-strong); padding: 18px; overflow-x: auto; }
   .diagram .mermaid { display: flex; justify-content: center; min-width: 560px; margin: 0; background: transparent; border: 0; }
   .diagram figcaption { font-size: 13.5px; color: var(--ink-soft); margin-top: 10px; line-height: 1.7; }
+
+  /* fig-svg: hand-drawn inline SVG for the core mechanism. Colors come from the tokens above */
+  .svg-scroll { overflow-x: auto; }
+  .fig-svg svg { display: block; width: 100%; min-width: 560px; height: auto; color: var(--ink); font-family: var(--f-sans); }
+  .fig-svg text { fill: currentColor; font-size: 12.5px; }
+  .fig-svg .tt { font-size: 14px; font-weight: 600; }
+  .fig-svg .sm { font-size: 12px; fill: var(--ink-soft); }
+  .fig-svg .lb { font-size: 12.5px; font-weight: 600; fill: var(--ink-soft); }
+  .fig-svg .acc { fill: var(--accent); }
+  .fig-svg .warnt { fill: var(--warn); }
+  .fig-svg .clasht { fill: var(--clash); font-weight: 600; }
+  .fig-svg .zone { fill: var(--surface-sunk); stroke: var(--rule); }
+  .fig-svg .zone.acc { fill: #EFF5F3; stroke: #C9DDD8; }
+  .fig-svg .nd rect, .fig-svg .nd polygon { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1.2; transition: fill .15s, stroke .15s; }
+  .fig-svg .nd.k-acc rect { stroke: var(--accent); stroke-width: 2; }
+  .fig-svg .nd.k-warn rect { stroke: var(--warn); stroke-width: 2; }
+  .fig-svg .nd.k-ok rect { stroke: var(--ok); stroke-width: 2; }
+  .fig-svg .ed { fill: none; stroke: var(--ink-faint); stroke-width: 1.5; marker-end: url(#mk); transition: stroke .15s, opacity .15s; }
+  .fig-svg .ed.noarrow { marker-end: none; }
+  .fig-svg .ed.dash { stroke-dasharray: 5 4; }
+  .fig-svg .ed.warn { stroke: var(--warn); marker-end: url(#mk-warn); }
+  .fig-svg .ed.clash { stroke: var(--clash); marker-end: url(#mk-clash); }
+  /* shared arrowheads: one hidden <svg> right after <body> */
+  .mk { fill: var(--ink-faint); } .mk-on { fill: var(--accent); } .mk-warn { fill: var(--warn); } .mk-clash { fill: var(--clash); }
+
+  /* ix: interactive figure. Buttons and boxes with data-k pick a key; the matching data-panel shows below */
+  .fig-hint { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 8px; }
+  .fig-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .fig-tabs button { font: inherit; font-size: 13px; line-height: 1.5; padding: 4px 11px; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink-soft); border-radius: 4px; cursor: pointer; }
+  .fig-tabs button:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .fig-tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .fig-svg .nd[data-k] { cursor: pointer; }
+  .fig-svg .nd[data-k]:hover rect, .fig-svg .nd[data-k]:hover polygon { stroke: var(--ink-soft); }
+  .fig-svg .nd[data-k]:focus { outline: none; }
+  .fig-svg .nd[data-k]:focus-visible rect, .fig-svg .nd[data-k]:focus-visible polygon { stroke: var(--accent); stroke-width: 2.5; }
+  .fig-svg .nd.on rect, .fig-svg .nd.on polygon, .fig-svg .nd.new rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.4; }
+  .fig-svg .nd.prop rect { stroke: var(--clash); stroke-dasharray: 5 4; stroke-width: 2; }
+  .fig-svg .ed.on, .fig-svg .ed.new { stroke: var(--accent); stroke-width: 2.4; marker-end: url(#mk-on); }
+  .fig-svg .ed.on.noarrow { marker-end: none; }
+  .fig-svg .ed.prop { stroke: var(--clash); stroke-dasharray: 5 4; stroke-width: 2.2; marker-end: url(#mk-clash); }
+  .fig-svg text.on { fill: var(--accent); }
+  figure[data-dim] .fig-svg .dim, figure[data-dim].fig-svg .dim { opacity: .3; }
+  .fig-svg .hide { display: none; }
+  .fig-panel { border-top: 1px solid var(--rule); margin-top: 12px; padding-top: 12px; font-size: 14.5px; line-height: 1.75; }
+  .fig-panel h4 { font-size: 15px; margin-bottom: 6px; }
+  .fig-panel dl { display: grid; grid-template-columns: 104px minmax(0,1fr); gap: 3px 14px; margin: 0; }
+  .fig-panel dt { color: var(--ink-faint); font-size: 12.5px; padding-top: 2px; word-break: keep-all; }
+  .fig-panel dd { margin: 0; }
+  .fig-panel table { min-width: 0; margin-top: 10px; font-size: 13.5px; }
+  .fig-panel td, .fig-panel th { padding: 6px 10px 6px 0; }
+  .fig-panel tr.fresh td { color: var(--accent); font-weight: 600; }
+  @media (max-width: 720px) { .fig-panel dl { grid-template-columns: 1fr; } .fig-panel dt { padding-top: 6px; } }
+  /* print: no buttons; every panel is shown, one after another */
+  @media print { .fig-tabs, .fig-hint { display: none; } .fig-panel [data-panel] { display: block !important; margin-bottom: 10px; } }
   .tldr { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
   .tldr > div { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
   .tldr b { font-size: 15px; }
@@ -228,6 +286,13 @@
 </style>
 </head>
 <body>
+<!-- shared arrowheads for every .fig-svg figure. Edges use them through CSS (.ed, .ed.on, .ed.warn, .ed.clash) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <marker id="mk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="mk-on" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-on" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="mk-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-warn" d="M0,0 L10,5 L0,10 z"/></marker>
+  <marker id="mk-clash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-clash" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs></svg>
 <div class="shell">
 
   <aside class="rail">
@@ -310,6 +375,57 @@ flowchart TD
         <figcaption>그림 2. 전체 흐름. 마름모는 확인 관문이다</figcaption>
       </figure>
 
+      <!-- fig-svg ix, select mode: a button or a box picks a key. Elements whose data-on lists the key light up;
+           with data-dim the others fade. Every key has a data-panel. Key facts also go in the caption or prose. -->
+      <figure class="diagram fig-svg ix" data-default="in" data-dim>
+        <div class="fig-hint">경로 버튼이나 상자를 누르세요</div>
+        <div class="fig-tabs" role="toolbar" aria-label="그림 조작"><button type="button" data-k="in">요청 접수</button><button type="button" data-k="work">처리</button><button type="button" data-k="read">상태 조회</button></div>
+        <div class="svg-scroll"><svg viewBox="0 0 760 210" role="img" aria-label="웹 앱의 요청은 API 서버가 작업 큐에 넣고, 작업자가 꺼내 처리해 데이터베이스에 저장한다">
+          <path class="ed" d="M140,58 H226" data-on="in"/><text class="lb" x="185" y="48" text-anchor="middle" data-on="in">요청</text>
+          <path class="ed" d="M370,58 H456" data-on="in"/><text class="lb" x="415" y="48" text-anchor="middle" data-on="in">작업 등록</text>
+          <path class="ed" d="M580,58 H636" data-on="work"/><text class="lb" x="608" y="48" text-anchor="middle" data-on="work">가져감</text>
+          <path class="ed" d="M690,86 V165 H584" data-on="work"/><text class="lb" x="640" y="190" text-anchor="middle" data-on="work">결과 저장</text>
+          <path class="ed" d="M300,86 V165 H456" data-on="read"/><text class="lb" x="380" y="157" text-anchor="middle" data-on="read">상태 조회</text>
+          <g class="nd" data-k="in" data-on="in" tabindex="0" role="button" aria-label="웹 앱"><rect x="20" y="30" width="120" height="56" rx="5"/><text class="tt" x="80" y="55" text-anchor="middle">웹 앱</text><text class="sm" x="80" y="72" text-anchor="middle">web/</text></g>
+          <g class="nd" data-k="in" data-on="in read" tabindex="0" role="button" aria-label="API 서버"><rect x="230" y="30" width="140" height="56" rx="5"/><text class="tt" x="300" y="55" text-anchor="middle">API 서버</text><text class="sm" x="300" y="72" text-anchor="middle">api/</text></g>
+          <g class="nd" data-k="work" data-on="in work" tabindex="0" role="button" aria-label="작업 큐"><rect x="460" y="30" width="120" height="56" rx="5"/><text class="tt" x="520" y="55" text-anchor="middle">작업 큐</text><text class="sm" x="520" y="72" text-anchor="middle">새로 추가</text></g>
+          <g class="nd" data-k="work" data-on="work" tabindex="0" role="button" aria-label="작업자"><rect x="640" y="30" width="100" height="56" rx="5"/><text class="tt" x="690" y="55" text-anchor="middle">작업자</text><text class="sm" x="690" y="72" text-anchor="middle">worker/</text></g>
+          <g class="nd" data-k="read" data-on="work read" tabindex="0" role="button" aria-label="데이터베이스"><rect x="460" y="140" width="120" height="50" rx="5"/><text class="tt" x="520" y="170" text-anchor="middle">데이터베이스</text></g>
+        </svg></div>
+        <div class="fig-panel" aria-live="polite">
+          <div data-panel="in" hidden><h4>요청 접수</h4><dl><dt>하는 일</dt><dd>API 서버가 요청을 검사하고 작업 큐에 넣는다. 처리는 하지 않는다</dd><dt>응답</dt><dd>작업 번호를 바로 돌려준다</dd></dl></div>
+          <div data-panel="work" hidden><h4>처리</h4><dl><dt>하는 일</dt><dd>작업자가 큐에서 작업을 하나씩 꺼내 처리하고 결과를 저장한다</dd><dt>장애 때</dt><dd>작업자가 멈춰도 작업은 큐에 남는다</dd></dl></div>
+          <div data-panel="read" hidden><h4>상태 조회</h4><dl><dt>하는 일</dt><dd>API 서버가 데이터베이스에서 작업 상태만 읽는다</dd><dt>쓰지 않는 것</dt><dd>큐를 직접 들여다보지 않는다</dd></dl></div>
+        </div>
+        <figcaption>그림 3. 요청 처리 구조. 경로를 고르면 그 경로의 상자와 화살표만 강조된다</figcaption>
+      </figure>
+
+      <!-- fig-svg ix, step mode: buttons are steps in order. data-from="n" shows an element from step n (0 = first button),
+           data-new="n" marks it new at step n, data-prop="n" marks it as a proposal from step n. -->
+      <figure class="diagram fig-svg ix" data-default="1">
+        <div class="fig-hint">단계를 차례로 누르세요</div>
+        <div class="fig-tabs" role="toolbar" aria-label="그림 조작"><button type="button" data-k="0">0 지금</button><button type="button" data-k="1">1 큐 추가</button><button type="button" data-k="2">2 작업자 전환</button></div>
+        <div class="svg-scroll"><svg viewBox="0 0 760 175" role="img" aria-label="API 서버와 데이터베이스 사이에 작업 큐와 작업자를 차례로 넣는다">
+          <path class="ed" d="M160,128 H596" data-from="0" data-prop="2"/><text class="lb" x="380" y="120" text-anchor="middle" data-from="0">직접 저장</text>
+          <text class="sm clasht" x="380" y="150" text-anchor="middle" data-from="2">이 줄을 내리자는 제안</text>
+          <path class="ed" d="M90,100 V45 H226" data-from="1" data-new="1"/>
+          <path class="ed" d="M350,45 H406" data-from="2" data-new="2"/>
+          <path class="ed" d="M530,45 H670 V96" data-from="2" data-new="2"/>
+          <g class="nd" data-from="0"><rect x="20" y="100" width="140" height="56" rx="5"/><text class="tt" x="90" y="125" text-anchor="middle">API 서버</text><text class="sm" x="90" y="142" text-anchor="middle">api/</text></g>
+          <g class="nd" data-from="0"><rect x="600" y="100" width="140" height="56" rx="5"/><text class="tt" x="670" y="133" text-anchor="middle">데이터베이스</text></g>
+          <g class="nd" data-from="1" data-new="1"><rect x="230" y="20" width="120" height="50" rx="5"/><text class="tt" x="290" y="50" text-anchor="middle">작업 큐</text></g>
+          <g class="nd" data-from="2" data-new="2"><rect x="410" y="20" width="120" height="50" rx="5"/><text class="tt" x="470" y="50" text-anchor="middle">작업자</text></g>
+        </svg></div>
+        <div class="fig-panel" aria-live="polite">
+          <div data-panel="0" hidden><h4>지금</h4><p>API 서버가 요청을 받아 데이터베이스에 직접 저장한다.</p></div>
+          <div data-panel="1" hidden><h4>1단계 — 큐 추가</h4><p>API 서버는 저장과 함께 큐에도 작업을 넣는다. 직접 저장 줄은 그대로 둔다.</p>
+            <div class="t-wrap"><table><thead><tr><th>바뀐 곳</th><th>상태</th></tr></thead><tbody><tr class="fresh"><td>API 서버 → 작업 큐</td><td>추가</td></tr></tbody></table></div></div>
+          <div data-panel="2" hidden><h4>2단계 — 작업자 전환</h4><p>작업자가 큐의 작업을 저장한다. 직접 저장 줄은 내리자고 제안한다.</p>
+            <div class="t-wrap"><table><thead><tr><th>바뀐 곳</th><th>상태</th></tr></thead><tbody><tr><td>API 서버 → 작업 큐</td><td>추가</td></tr><tr class="fresh"><td>작업 큐 → 작업자 → 데이터베이스</td><td>추가</td></tr><tr class="fresh"><td>API 서버 → 데이터베이스</td><td>내리기 제안</td></tr></tbody></table></div></div>
+        </div>
+        <figcaption>그림 4. 작업 큐 도입 순서. 초록은 그 단계에 새로 생긴 것, 빨강 점선은 제안이다</figcaption>
+      </figure>
+
       <div class="bars">
         <div class="bar-row"><span class="lbl">단계 A</span><span class="bar"><i class="done" style="width:100%"></i></span><span class="n">7 / 7</span></div>
         <div class="bar-row"><span class="lbl">단계 B</span><span class="bar"><i class="done" style="width:60%"></i><i class="ready" style="width:20%"></i></span><span class="n">3 / 5</span></div>
@@ -352,9 +468,10 @@ flowchart TD
       </div>
       <div class="t-wrap">
         <table>
-          <thead><tr><th>#</th><th>정할 것</th><th>권장</th><th>막히는 것</th></tr></thead>
+          <thead><tr><th>#</th><th>정할 것</th><th>권장</th><th>권장 근거</th><th>막히는 것</th></tr></thead>
           <tbody>
-            <tr><td class="t-num">C1</td><td class="t-key">주제</td><td>권장안</td><td>무엇이 멈추나</td></tr>
+            <tr><td class="t-num">C1</td><td class="t-key">주제</td><td>권장안</td><td><span class="badge b-ok">합의</span> 누가 언제</td><td>무엇이 멈추나</td></tr>
+            <tr><td class="t-num">C2</td><td class="t-key">주제</td><td>권장안</td><td><span class="badge b-plan">제안</span> 이 문서</td><td>무엇이 멈추나</td></tr>
           </tbody>
         </table>
       </div>
@@ -370,9 +487,16 @@ flowchart TD
         </table>
       </div>
       <div class="ruling">
-        <span class="ruling-tag">권장 A</span>
-        <p>권장안과 그 이유.</p>
+        <span class="ruling-tag">권장 A · 합의됨</span>
+        <p>권장안과 그 이유. 누가 언제 합의했는지 적고 기록을 링크한다.</p>
         <div class="alt stack-tight"><p><b>B</b> — 버린 이유.</p></div>
+      </div>
+
+      <!-- when the source lists options but no decision, the recommendation is this document's proposal -->
+      <div class="ruling proposal">
+        <span class="ruling-tag">제안 A · 미합의</span>
+        <p>권장안과 그 이유.</p>
+        <p class="small">이 권장안은 이 문서의 제안이다. 원문에는 선택지만 있고, 합의된 결정이 아니다.</p>
       </div>
 
       <div class="flag n">
@@ -390,7 +514,7 @@ flowchart TD
 </div>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js"></script>
 <script>
-  mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose', flowchart: { htmlLabels: true, curve: 'basis' }, themeVariables: { fontFamily: '"IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif', fontSize: '14px' } });
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose', flowchart: { htmlLabels: true, curve: 'basis' }, themeVariables: { fontFamily: '"IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif', fontSize: '14px', commitLabelFontSize: '13px', tagLabelFontSize: '13px' } });
 </script>
 <script>
   /* rail scroll tracking: highlights the section in view */
@@ -422,6 +546,42 @@ flowchart TD
     window.addEventListener('resize', sync, { passive: true });
     sync();
   })();
+
+  /* ix figures: buttons (.fig-tabs) and boxes ([data-k]) pick a key; see references/diagrams.md */
+  document.querySelectorAll('figure.ix').forEach(function (fig) {
+    var svg = fig.querySelector('svg');
+    var tabs = Array.prototype.slice.call(fig.querySelectorAll('.fig-tabs button'));
+    var keys = tabs.map(function (b) { return b.getAttribute('data-k'); });
+    var dim = fig.hasAttribute('data-dim');
+    function pick(k) {
+      if (!fig.querySelector('[data-panel="' + k + '"]')) { return; }
+      var step = keys.indexOf(k), any = false;
+      tabs.forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-k') === k); });
+      var marked = svg.querySelectorAll('[data-on]');
+      marked.forEach(function (el) {
+        var hit = el.getAttribute('data-on').split(' ').indexOf(k) >= 0;
+        el.classList.toggle('on', hit);
+        if (hit) { any = true; }
+      });
+      marked.forEach(function (el) { el.classList.toggle('dim', dim && any && !el.classList.contains('on')); });
+      svg.querySelectorAll('[data-from]').forEach(function (el) {
+        el.classList.toggle('hide', +el.getAttribute('data-from') > step);
+        el.classList.toggle('new', el.getAttribute('data-new') === String(step));
+        el.classList.toggle('prop', el.hasAttribute('data-prop') && step >= +el.getAttribute('data-prop'));
+      });
+      fig.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== k; });
+    }
+    fig.querySelectorAll('.fig-tabs button').forEach(function (b) {
+      b.addEventListener('click', function () { pick(b.getAttribute('data-k')); });
+    });
+    svg.querySelectorAll('[data-k]').forEach(function (n) {
+      n.addEventListener('click', function () { pick(n.getAttribute('data-k')); });
+      n.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(n.getAttribute('data-k')); }
+      });
+    });
+    pick(fig.getAttribute('data-default') || keys[0]);
+  });
 </script>
 </body>
 </html>

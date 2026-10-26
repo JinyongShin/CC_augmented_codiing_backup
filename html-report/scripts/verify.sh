@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # HTML 보고서 렌더링 검증 (macOS).
 # 사용: verify.sh <html 절대경로> [출력 디렉터리] [섹션id ...]
+#   예: verify.sh /abs/report.html /tmp/out s0 s2 s4
 #  - 출력 디렉터리를 생략하면 임시 디렉터리를 만든다.
+#  - 섹션 id는 공백으로 나눈 별도 인자로 준다. "s0,s2"나 "s0 s2"로 줘도 나눠서 쓴다.
 #  - 섹션 id를 생략하면 HTML의 <section id="..."> 전부를 쓴다.
 #  1) Mermaid 다이어그램이 전부 렌더링됐는지(오류 다이어그램 0개)
-#  2) 페이지 높이와 섹션별 y 좌표 (스크린샷 crop 위치 계산용)
+#  2) 페이지 높이와 섹션별 y 좌표 (스크린샷 crop 위치 계산용),
+#     그림마다 화면에 보이는 가장 작은 글자 크기 (10px 미만 !!, 10~11px !)
 #  3) 전체 페이지 스크린샷 + 섹션별 crop (sips)
 #  4) 400px 폭에서 화면 밖으로 넘치는 요소
 # Chrome은 CHROME 환경 변수, /Applications, ~/Applications 순서로 찾는다.
@@ -14,7 +17,10 @@ if [ $# -lt 1 ]; then echo "사용: verify.sh <html 절대경로> [출력 디렉
 HTML="$1"; shift
 if [ ! -f "$HTML" ]; then echo "!! HTML 파일 없음: $HTML"; exit 1; fi
 if [ $# -gt 0 ]; then OUT="$1"; shift; else OUT=$(mktemp -d -t html-report-verify); fi
-SECTIONS=("$@")
+SECTIONS=()
+for arg in "$@"; do
+  for id in ${arg//,/ }; do SECTIONS+=("$id"); done
+done
 if [ ${#SECTIONS[@]} -eq 0 ]; then
   while IFS= read -r id; do SECTIONS+=("$id"); done < <(grep -o '<section id="[^"]*"' "$HTML" | sed 's/<section id="//; s/"$//' || true)
 fi
@@ -32,30 +38,39 @@ for c in "${CHROME:-}" \
 done
 
 total=$( { grep -o 'class="mermaid"' "$HTML" || true; } | wc -l | tr -d ' ')
+svgs=$( { grep -o 'class="diagram fig-svg' "$HTML" || true; } | wc -l | tr -d ' ')
 
 if [ -z "$CHROME" ]; then
   echo "!! Chrome 없음. CHROME 환경 변수로 실행 파일 경로를 지정할 수 있다."
   echo "== 1. Mermaid 정의 (렌더링 확인 불가)"
-  echo "정의된 다이어그램: $total"
-  SKIPPED+=("Mermaid 렌더링" "섹션 좌표" "스크린샷" "400px 넘침")
+  echo "정의된 다이어그램: $total (SVG 그림 $svgs)"
+  SKIPPED+=("Mermaid 렌더링" "섹션 좌표" "그림 글자 크기" "스크린샷" "400px 넘침")
 else
   echo "== 1. Mermaid 렌더링"
   "$CHROME" --headless=new --disable-gpu --virtual-time-budget=25000 --window-size=1400,3000 \
     --dump-dom "$URL" 2>/dev/null > "$OUT/dom.html"
-  echo "정의된 다이어그램: $total"
+  echo "정의된 다이어그램: $total (SVG 그림 $svgs)"
   grep -o 'aria-roledescription="[^"]*"' "$OUT/dom.html" | sort | uniq -c || true
   [ "$total" = "0" ] && echo "(다이어그램 없음)"
   if grep -q 'aria-roledescription="error"' "$OUT/dom.html"; then echo "!! 오류 다이어그램 있음"; fi
 
-  echo "== 2. 섹션 좌표"
+  echo "== 2. 섹션 좌표와 그림 글자 크기"
   cp "$HTML" "$OUT/probe.html"
   ids=$(printf "'%s'," ${SECTIONS[@]+"${SECTIONS[@]}"})
   cat >> "$OUT/probe.html" <<EOF
 <script>setTimeout(function(){var r=[${ids%,}].map(function(i){var e=document.getElementById(i);return i+':'+(e?Math.round(e.getBoundingClientRect().top+scrollY):-1)});
-var d=document.createElement('pre');d.id='OFF';d.textContent=r.join(' ')+' H:'+document.documentElement.scrollHeight;document.body.appendChild(d)},6000)</script>
+var d=document.createElement('pre');d.id='OFF';d.textContent=r.join(' ')+' H:'+document.documentElement.scrollHeight;document.body.appendChild(d);
+var f=[];document.querySelectorAll('figure.diagram').forEach(function(g,n){var s=g.querySelector('svg');if(!s)return;var vb=s.viewBox&&s.viewBox.baseVal;
+var k=(vb&&vb.width)?s.getBoundingClientRect().width/vb.width:1,m=99;s.querySelectorAll('text,foreignObject *').forEach(function(t){
+if(t.getClientRects().length&&[].some.call(t.childNodes,function(c){return c.nodeType===3&&c.textContent.trim()})){var z=parseFloat(getComputedStyle(t).fontSize)*k;if(z<m)m=z}});
+var c=g.querySelector('figcaption'),l=c?c.textContent.trim().slice(0,24):'그림 '+(n+1);if(m<99)f.push((m<10?'!! ':m<11?'!  ':'')+l+' — 최소 '+m.toFixed(1)+'px')});
+var e=document.createElement('pre');e.id='FONT';e.textContent=f.join('\n')||'(그림 없음)';document.body.appendChild(e)},6000)</script>
 EOF
   "$CHROME" --headless=new --disable-gpu --virtual-time-budget=25000 --window-size=1400,3000 \
-    --dump-dom "file://$OUT/probe.html" 2>/dev/null | { grep -o 'id="OFF">[^<]*' || true; } | sed 's/id="OFF">//' | tee "$OUT/offsets.txt"
+    --dump-dom "file://$OUT/probe.html" 2>/dev/null > "$OUT/probe-dom.html"
+  { grep -o 'id="OFF">[^<]*' "$OUT/probe-dom.html" || true; } | sed 's/id="OFF">//' | tee "$OUT/offsets.txt"
+  echo "-- 그림별 최소 글자 크기 (1400px 폭. !! 10px 미만은 고친다, ! 10~11px은 스크린샷으로 확인)"
+  perl -0ne 'print "$1\n" if /id="FONT">(.*?)<\/pre>/s' "$OUT/probe-dom.html"
 
   echo "== 3. 스크린샷"
   H=$(grep -o 'H:[0-9]*' "$OUT/offsets.txt" | cut -d: -f2 || true)
@@ -68,6 +83,7 @@ EOF
     for pair in $(tr ' ' '\n' < "$OUT/offsets.txt" | { grep -v '^H:' || true; }); do
       id=${pair%%:*}; y=${pair##*:}
       if [ "$y" -lt 0 ]; then echo "!! 섹션 id 없음: $id"; SKIPPED+=("sec-$id.png (id 없음)"); continue; fi
+      [ "$y" -eq 0 ] && y=1  # sips treats offset 0 as "center the crop"
       sips -c 1800 1400 --cropOffset "$y" 0 "$OUT/full.png" --out "$OUT/sec-$id.png" >/dev/null 2>&1 \
         || { echo "!! 자르기 실패: $id"; SKIPPED+=("sec-$id.png"); }
     done
